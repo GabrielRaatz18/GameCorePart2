@@ -45,7 +45,9 @@ fun CartScreen(
     cart: List<GameData> = emptyList(),
     onRemoveItem: (GameData) -> Unit = {},
     onContinueShopping: () -> Unit = {},
-    onDestinationClick: (GameCoreDestination) -> Unit = {}
+    onCheckout: () -> Unit = {},
+    onDestinationClick: (GameCoreDestination) -> Unit = {},
+    onOpenProfile: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -63,7 +65,8 @@ fun CartScreen(
                 subtitle = "${cart.size} itens",
                 showBack = true,
                 showCartAction = false,
-                onBackClick = onContinueShopping
+                onBackClick = onContinueShopping,
+                onAvatarClick = onOpenProfile
             )
         }
     ) {
@@ -163,15 +166,12 @@ fun CartScreen(
                 Spacer(modifier = Modifier.height(GameCoreDimens.SectionSpacing))
 
                 GameCorePrimaryButton(
-                    text = "Finalizar compra",
+                    text = "Pagar e adicionar à biblioteca",
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = R.drawable.ic_lock,
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Compra finalizada!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        onCheckout()
+                        Toast.makeText(context, "Pagamento concluído! Jogos adicionados à biblioteca.", Toast.LENGTH_SHORT).show()
                     }
                 )
             }

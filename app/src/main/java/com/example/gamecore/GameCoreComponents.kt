@@ -97,11 +97,13 @@ fun GameCoreTopBar(
     showBack: Boolean = false,
     showSearchAction: Boolean = false,
     showCartAction: Boolean = true,
+    showSettingsAction: Boolean = false,
     cartCount: Int = 3,
     @DrawableRes avatarRes: Int? = null,
     onBackClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onCartClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     onAvatarClick: () -> Unit = {}
 ) {
     Surface(
@@ -160,6 +162,15 @@ fun GameCoreTopBar(
                         contentDescription = "Carrinho",
                         badge = cartCount.takeIf { it > 0 }?.toString(),
                         onClick = onCartClick
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+
+                if (showSettingsAction) {
+                    GameCoreHeaderIconButton(
+                        iconRes = R.drawable.ic_settings,
+                        contentDescription = "Configurações",
+                        onClick = onSettingsClick
                     )
                     Spacer(Modifier.width(8.dp))
                 }

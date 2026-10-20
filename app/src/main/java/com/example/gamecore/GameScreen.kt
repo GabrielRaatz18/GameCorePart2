@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gamecore.ui.theme.GameCoreTheme
+import java.util.Locale
 
 @Composable
 fun GameScreen(
@@ -45,12 +46,27 @@ fun GameScreen(
     onBack: () -> Unit = {},
     onOpenCart: () -> Unit = {},
     onAddToCart: () -> Boolean = { false },
+    onAddToWishlist: () -> Boolean = { false },
+    onOpenReviews: () -> Unit = {},
+    isOwned: Boolean = false,
+    reviews: List<ReviewData> = emptyList(),
     onDestinationClick: (GameCoreDestination) -> Unit = {}
 ) {
     val context = LocalContext.current
 
     var isFavorite by remember(game.name) {
         mutableStateOf(false)
+    }
+
+    val gameReviews = remember(reviews.size, game.id) {
+        reviews.filter { it.gameId == game.id }
+    }
+    val avgRating = if (gameReviews.isNotEmpty()) gameReviews.map { it.rating }.average() else 5.0
+    val ratingText = String.format(Locale.US, "%.1f", avgRating)
+    val reviewCountText = if (gameReviews.isNotEmpty()) {
+        "${gameReviews.size} avaliações da comunidade"
+    } else {
+        "Sem avaliações ainda"
     }
 
     GameCorePage(
@@ -61,11 +77,12 @@ fun GameScreen(
             GameCoreTopBar(
                 title = "GameCore",
                 showBack = true,
-                showSearchAction = true,
+                showSearchAction = false,
                 showCartAction = true,
                 cartCount = cartCount,
                 onBackClick = onBack,
-                onCartClick = onOpenCart
+                onCartClick = onOpenCart,
+                onAvatarClick = { onDestinationClick(GameCoreDestination.PROFILE) }
             )
         }
     ) {
@@ -110,7 +127,7 @@ fun GameScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "5,0",
+                        text = ratingText,
                         color = GameCoreColors.TextPrimary,
                         style = MaterialTheme.typography.labelLarge
                     )
@@ -118,7 +135,7 @@ fun GameScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "Avaliações dos jogadores",
+                        text = reviewCountText,
                         color = GameCoreColors.TextDisabled,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -126,60 +143,88 @@ fun GameScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                GameCorePrice(
-                    price = game.price.toBrazilianPrice(),
-                    fontSize = 22
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                GameCorePrimaryButton(
-                    text = "Adicionar ao carrinho",
-                    modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = R.drawable.ic_cart,
-                    onClick = {
-                        val added = onAddToCart()
-
-                        val message = if (added) {
-                            "Jogo adicionado ao carrinho!"
-                        } else {
-                            "Este jogo já está no carrinho."
+                if (isOwned) {
+                    GameCorePrimaryButton(
+                        text = "Jogar",
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = R.drawable.ic_play,
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Iniciando ${game.name}...",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
+                    )
 
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    GameCoreSecondaryButton(
+                        text = "Ver / Escrever avaliação",
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = R.drawable.ic_star,
+                        onClick = onOpenReviews
+                    )
+                } else {
+                    GameCorePrice(
+                        price = game.price.toBrazilianPrice(),
+                        fontSize = 22
+                    )
 
-                GameCoreSecondaryButton(
-                    text = if (isFavorite) "Favorito" else "Lista de desejos",
-                    modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = if (isFavorite) {
-                        R.drawable.ic_star
-                    } else {
-                        R.drawable.ic_favorite
-                    },
-                    onClick = {
-                        isFavorite = !isFavorite
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                        val message = if (isFavorite) {
-                            "Adicionado aos favoritos"
-                        } else {
-                            "Removido dos favoritos"
+                    GameCorePrimaryButton(
+                        text = "Adicionar ao carrinho",
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = R.drawable.ic_cart,
+                        onClick = {
+                            val added = onAddToCart()
+                            val message = if (added) {
+                                "Jogo adicionado ao carrinho!"
+                            } else {
+                                "Este jogo já está no carrinho."
+                            }
+
+                            Toast.makeText(
+                                context,
+                                message,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
+                    )
 
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    GameCoreSecondaryButton(
+                        text = if (isFavorite) "Na lista de desejos" else "Adicionar à lista de desejos",
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = if (isFavorite) {
+                            R.drawable.ic_star
+                        } else {
+                            R.drawable.ic_favorite
+                        },
+                        onClick = {
+                            val added = onAddToWishlist()
+                            isFavorite = added || isFavorite
+                            val message = if (added) "Adicionado à lista de desejos" else "Este jogo já está na lista"
+
+                            Toast.makeText(
+                                context,
+                                message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    GameCoreSecondaryButton(
+                        text = "Ver avaliações",
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = R.drawable.ic_star,
+                        onClick = onOpenReviews
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(GameCoreDimens.SectionSpacing))
 

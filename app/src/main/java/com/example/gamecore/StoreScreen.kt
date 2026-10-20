@@ -46,7 +46,8 @@ fun StoreScreen(
     cartCount: Int = 0,
     onOpenGame: (GameData) -> Unit = {},
     onOpenCart: () -> Unit = {},
-    onDestinationClick: (GameCoreDestination) -> Unit = {}
+    onDestinationClick: (GameCoreDestination) -> Unit = {},
+    onOpenProfile: () -> Unit = {}
 ) {
     var selectedCategory by remember {
         mutableStateOf("Destaques")
@@ -71,7 +72,8 @@ fun StoreScreen(
                 title = "GameCore",
                 subtitle = "Encontre seu próximo jogo",
                 cartCount = cartCount,
-                onCartClick = onOpenCart
+                onCartClick = onOpenCart,
+                onAvatarClick = onOpenProfile
             )
         }
     ) {

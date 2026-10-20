@@ -16,7 +16,17 @@ data class GameData(
     val release: String,
     val ageRating: String,
     val platforms: String,
-    val screenshots: List<Int> = emptyList()
+    val screenshots: List<Int> = emptyList(),
+    val id: String = name.lowercase().replace(" ", "-")
+)
+
+data class ReviewData(
+    val id: String,
+    val gameId: String,
+    val author: String,
+    val rating: Int,
+    val text: String,
+    val helpful: Int = 0
 )
 
 fun Double.toBrazilianPrice(): String {
